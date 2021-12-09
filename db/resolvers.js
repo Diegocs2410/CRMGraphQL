@@ -1,4 +1,6 @@
 const Usuario = require("../models/Usuario");
+const Producto = require("../models/Producto");
+const Cliente = require("../models/Cliente");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { create } = require("../models/Usuario");
@@ -16,6 +18,22 @@ const resolvers = {
       try {
         const usuarioId = await jwt.verify(token, process.env.SECRET_KEY);
         return await Usuario.findOne({ usuarioId });
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    obtenerProductos: async () => {
+      try {
+        return await Producto.find();
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    obtenerProducto: async (_, { id }) => {
+      try {
+        const producto = await Producto.findById(id);
+        if (!producto) throw new Error("Producto no encontrado");
+        return producto;
       } catch (err) {
         console.log(err);
       }
@@ -44,6 +62,47 @@ const resolvers = {
         return {
           token: createToken(usuario, process.env.SECRET_KEY, "1d"),
         };
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    nuevoProducto: async (_, { input }, ctx, info) => {
+      try {
+        return await Producto.create(input);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    actualizarProducto: async (_, { id, input }, ctx, info) => {
+      try {
+        const producto = await Producto.findById(id);
+        if (!producto) throw new Error("Producto no encontrado");
+        return Producto.findByIdAndUpdate(id, input, { new: true });
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    eliminarProducto: async (_, { id }, ctx, info) => {
+      try {
+        const producto = await Producto.findById(id);
+        if (!producto) throw new Error("Producto no encontrado");
+        return Producto.findByIdAndDelete(id, {
+          new: true,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    nuevoCliente: async (_, { input }, ctx, info) => {
+      try {
+        const { email } = input;
+        const cliente = await Cliente.findOne({ email });
+        if (cliente) throw new Error("El cliente ya existe");
+
+        const nuevoCliente = await Cliente.create(input);
+        nuevoCliente.vendedor = ;
+
+        return await Cliente.create(input);
       } catch (err) {
         console.log(err);
       }
